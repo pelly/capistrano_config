@@ -1,0 +1,2 @@
+#!/bin/bash -l
+env RBENV_VERSION=3.0.3 rbenv exec bundle exec rspec /work/projects/capistrano_config/spec --require teamcity/spec/runner/formatter/teamcity/formatter --format 'Spec::Runner::Formatter::TeamcityFormatter' --pattern '**/*_spec.rb' --backtrace

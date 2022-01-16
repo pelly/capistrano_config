@@ -1,8 +1,9 @@
 $LOAD_PATH.unshift(File.join(File.dirname(__FILE__), "..", "lib"))
 $LOAD_PATH.unshift(File.dirname(__FILE__))
-require "capistrano/all"
+require "capistrano_config/all"
 require "rspec"
 require "mocha/api"
+require "rake"
 require "time"
 
 # Requires supporting files with custom matchers and macros, etc,
