@@ -1,6 +1,6 @@
 require "spec_helper"
 
-module Capistrano
+module CapistranoConfig
   class Configuration
     describe RoleFilter do
       subject(:role_filter) { RoleFilter.new(values) }

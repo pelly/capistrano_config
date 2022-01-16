@@ -1,6 +1,6 @@
 require "spec_helper"
 
-module Capistrano
+module CapistranoConfig
   class Configuration
     describe Servers do
       let(:servers) { Servers.new }
@@ -24,7 +24,7 @@ module Capistrano
         end
 
         it "accepts instances of server objects" do
-          servers.add_role(:app, [Capistrano::Configuration::Server.new("example.net"), "example.com"])
+          servers.add_role(:app, [CapistranoConfig::Configuration::Server.new("example.net"), "example.com"])
           expect(servers.roles_for([:app]).length).to eq 2
         end
 

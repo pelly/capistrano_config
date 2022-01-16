@@ -1,6 +1,6 @@
 require "spec_helper"
 
-module Capistrano
+module CapistranoConfig
   class Configuration
     describe Server do
       let(:server) { Server.new("root@hostname:1234") }

@@ -5,7 +5,7 @@
 # This class is not used directly; instead it is typically accessed via the
 # `install_plugin` method of the Capistrano DSL.
 #
-module Capistrano
+module CapistranoConfig
   class Configuration
     class PluginInstaller
       # "Installs" a Plugin into Capistrano by loading its tasks, hooks, and
@@ -15,8 +15,8 @@ module Capistrano
       #
       # The plugin class or instance may be provided. These are equivalent:
       #
-      # install(Capistrano::SCM::Git)
-      # install(Capistrano::SCM::Git.new)
+      # install(CapistranoConfig::SCM::Git)
+      # install(CapistranoConfig::SCM::Git.new)
       #
       # Note that the :load_immediately flag is for internal use only and will
       # be removed in an upcoming release.

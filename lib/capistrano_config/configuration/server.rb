@@ -1,6 +1,6 @@
 require "set"
 require "sshkit"
-module Capistrano
+module CapistranoConfig
   class Configuration
     class Server < SSHKit::Host
       extend Forwardable

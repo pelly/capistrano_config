@@ -1,6 +1,6 @@
 require "spec_helper"
 
-module Capistrano
+module CapistranoConfig
   class Configuration
     describe Question do
       let(:question) { Question.new(key, default, stdin: stdin) }

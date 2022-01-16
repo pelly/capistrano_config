@@ -1,6 +1,6 @@
 require "forwardable"
 
-module Capistrano
+module CapistranoConfig
   module DSL
     module Env
       extend Forwardable

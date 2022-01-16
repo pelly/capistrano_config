@@ -1,6 +1,6 @@
 require "spec_helper"
 
-module Capistrano
+module CapistranoConfig
   class Configuration
     describe Filter do
       let(:available) do

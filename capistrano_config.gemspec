@@ -6,7 +6,7 @@ require "capistrano_config/version"
 
 Gem::Specification.new do |gem|
   gem.name          = "capistrano_config"
-  gem.version       = Capistrano::VERSION
+  gem.version       = CapistranoConfig::VERSION
   gem.authors       = ["Tom Clements", "Lee Hambley", "John Pelly"]
   gem.email         = [ "jpelly@gmail.com"]
   gem.description   = "Extracted the configuration logic from Capistrano"

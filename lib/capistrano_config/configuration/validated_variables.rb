@@ -1,7 +1,7 @@
 require "capistrano_config/proc_helpers"
 require "delegate"
 
-module Capistrano
+module CapistranoConfig
   class Configuration
     # Decorates a Variables object to additionally perform an optional set of
     # user-supplied validation rules. Each rule for a given key is invoked
@@ -22,7 +22,7 @@ module Capistrano
     #   end
     #
     class ValidatedVariables < SimpleDelegator
-      include Capistrano::ProcHelpers
+      include CapistranoConfig::ProcHelpers
 
       def initialize(variables)
         super(variables)
@@ -92,7 +92,7 @@ module Capistrano
 
       def assert_value_or_block_not_both(value, block)
         return if value.nil? || block.nil?
-        raise Capistrano::ValidationError,
+        raise CapistranoConfig::ValidationError,
               "Value and block both passed to Configuration#set"
       end
 

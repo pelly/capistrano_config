@@ -2,7 +2,7 @@ require "set"
 require "capistrano_config/configuration"
 require "capistrano_config/configuration/filter"
 
-module Capistrano
+module CapistranoConfig
   class Configuration
     class Servers
       include Enumerable

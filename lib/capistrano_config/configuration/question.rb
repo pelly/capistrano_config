@@ -1,4 +1,4 @@
-module Capistrano
+module CapistranoConfig
   class Configuration
     class Question
       def initialize(key, default, options={})

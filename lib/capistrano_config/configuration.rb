@@ -6,7 +6,7 @@ require_relative "configuration/servers"
 require_relative "configuration/validated_variables"
 require_relative "configuration/variables"
 
-module Capistrano
+module CapistranoConfig
   class ValidationError < RuntimeError; end
 
   class Configuration
@@ -107,7 +107,7 @@ module Capistrano
     end
 
     def configure_scm
-      Capistrano::Configuration::SCMResolver.new.resolve
+      CapistranoConfig::Configuration::SCMResolver.new.resolve
     end
 
     def timestamp

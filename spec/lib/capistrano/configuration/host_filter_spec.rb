@@ -1,6 +1,6 @@
 require "spec_helper"
 
-module Capistrano
+module CapistranoConfig
   class Configuration
     describe HostFilter do
       subject(:host_filter) { HostFilter.new(values) }

@@ -1,6 +1,6 @@
 require "capistrano_config/proc_helpers"
 
-module Capistrano
+module CapistranoConfig
   class Configuration
     # Holds the variables assigned at Capistrano runtime via `set` and retrieved
     # with `fetch`. Does internal bookkeeping to help identify user mistakes
@@ -17,7 +17,7 @@ module Capistrano
       ].freeze
       private_constant :CAPISTRANO_LOCATION, :IGNORED_LOCATIONS
 
-      include Capistrano::ProcHelpers
+      include CapistranoConfig::ProcHelpers
 
       def initialize(values={})
         @trusted_keys = []

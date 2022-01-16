@@ -4,7 +4,7 @@ require "capistrano_config/configuration/host_filter"
 require "capistrano_config/configuration/null_filter"
 require "capistrano_config/configuration/role_filter"
 
-module Capistrano
+module CapistranoConfig
   class Configuration
     class Filter
       def initialize(type, values=nil)

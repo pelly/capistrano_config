@@ -1,4 +1,4 @@
-module Capistrano
+module CapistranoConfig
   class VersionValidator
     def initialize(version)
       @version = version

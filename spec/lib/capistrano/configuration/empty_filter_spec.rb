@@ -1,6 +1,6 @@
 require "spec_helper"
 
-module Capistrano
+module CapistranoConfig
   class Configuration
     describe EmptyFilter do
       subject(:empty_filter) { EmptyFilter.new }

@@ -1,6 +1,6 @@
 require "spec_helper"
 
-module Capistrano
+module CapistranoConfig
   describe Configuration do
     let(:config) { Configuration.new }
     let(:servers) { stub }
@@ -78,7 +78,7 @@ module Capistrano
         end
 
         it "raises an exception when given both a value and block" do
-          expect { config.set(:key, :value) { :value } }.to raise_error(Capistrano::ValidationError)
+          expect { config.set(:key, :value) { :value } }.to raise_error(CapistranoConfig::ValidationError)
         end
       end
 
@@ -167,7 +167,7 @@ module Capistrano
       context "validations" do
         before do
           config.validate :key do |_, value|
-            raise Capistrano::ValidationError unless value.length > 3
+            raise CapistranoConfig::ValidationError unless value.length > 3
           end
         end
 
@@ -186,17 +186,17 @@ module Capistrano
         end
 
         it "raises an exception on invalid string" do
-          expect { config.set(:key, "sho") }.to raise_error(Capistrano::ValidationError)
+          expect { config.set(:key, "sho") }.to raise_error(CapistranoConfig::ValidationError)
         end
 
         it "raises an exception on invalid string provided by block" do
           config.set(:key) { "sho" }
-          expect { config.fetch(:key) }.to raise_error(Capistrano::ValidationError)
+          expect { config.fetch(:key) }.to raise_error(CapistranoConfig::ValidationError)
         end
 
         it "raises an exception on invalid string provided by lambda" do
           config.set :key, -> { "sho" }
-          expect { config.fetch(:key) }.to raise_error(Capistrano::ValidationError)
+          expect { config.fetch(:key) }.to raise_error(CapistranoConfig::ValidationError)
         end
       end
 
