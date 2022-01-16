@@ -42,6 +42,27 @@ module Capistrano
       end
     end
 
+    describe "setting and fetching via missing methods" do
+      context "set via method_name=" do
+        subject { config.fetch(:some_val, :default) }
+
+        it "sets the value" do
+          config.some_val = :value
+          expect(subject).to eq :value
+        end
+      end
+
+      context "get via method_name" do
+        it "gets a value via method name" do
+          config.set(:some_val, :value)
+          expect(config.some_val).to eq(:value)
+        end
+
+        it "returns nil when no value was set" do
+          expect(config.some_val).to be_nil
+        end
+      end
+    end
     describe "setting and fetching" do
       subject { config.fetch(:key, :default) }
 

@@ -165,6 +165,17 @@ module Capistrano
       installer.scm_installed?
     end
 
+    def method_missing(name, *args)
+      set_match = name.to_s.match /(?<key>.*)=$/
+      if set_match
+        key = set_match[:key].to_sym
+        value = args[0]
+        self.set(key, value)
+      else
+        self.fetch(name.to_sym)
+      end
+    end
+
     def servers
       @servers ||= Servers.new
     end
