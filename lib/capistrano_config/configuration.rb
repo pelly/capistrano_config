@@ -165,6 +165,10 @@ module CapistranoConfig
       installer.scm_installed?
     end
 
+    def [](name)
+      self.fetch(name.to_sym)
+    end
+
     def method_missing(name, *args)
       set_match = name.to_s.match /(?<key>.*)=$/
       if set_match

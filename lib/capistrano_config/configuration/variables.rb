@@ -19,12 +19,13 @@ module CapistranoConfig
 
       include CapistranoConfig::ProcHelpers
 
-      def initialize(values={})
+      def initialize(values={}, indifferent_access:true)
         @trusted_keys = []
         @fetched_keys = []
         @locations = {}
         @values = values
         @trusted = true
+        @indifferent_access = indifferent_access
       end
 
       def untrusted!
@@ -35,6 +36,7 @@ module CapistranoConfig
       end
 
       def set(key, value=nil, &block)
+        key = key.to_sym if @indifferent_access
         @trusted_keys << key if trusted? && !@trusted_keys.include?(key)
         remember_location(key)
         values[key] = block || value
@@ -43,12 +45,14 @@ module CapistranoConfig
       end
 
       def fetch(key, default=nil, &block)
+        key = key.to_sym if @indifferent_access
         fetched_keys << key unless fetched_keys.include?(key)
         peek(key, default, &block)
       end
 
       # Internal use only.
       def peek(key, default=nil, &block)
+        key = key.to_sym if @indifferent_access
         value = fetch_for(key, default, &block)
         while callable_without_parameters?(value)
           value = (values[key] = value.call)
@@ -57,10 +61,12 @@ module CapistranoConfig
       end
 
       def fetch_for(key, default, &block)
+        key = key.to_sym if @indifferent_access
         block ? values.fetch(key, &block) : values.fetch(key, default)
       end
 
       def delete(key)
+        key = key.to_sym if @indifferent_access
         values.delete(key)
       end
 
@@ -85,6 +91,7 @@ module CapistranoConfig
       # assigned (i.e. where `set` was called). If the key was never assigned,
       # returns `nil`.
       def source_locations(key)
+        key = key.to_sym if @indifferent_access
         locations[key]
       end
 
