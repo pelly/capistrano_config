@@ -7,7 +7,7 @@ module CapistranoConfig
     class Servers
       include Enumerable
 
-      def add_host(host, properties={})
+      def add_host(host, properties = {})
         new_host = Server[host]
         new_host.port = properties[:port] if properties.key?(:port)
         # This matching logic must stay in sync with `Server#matches?`.
@@ -22,19 +22,22 @@ module CapistranoConfig
       end
 
       # rubocop:disable Security/MarshalLoad
-      def add_role(role, hosts, options={})
+      def add_role(role, hosts, options = {})
         options_deepcopy = Marshal.dump(options.merge(roles: role))
         Array(hosts).each { |host| add_host(host, Marshal.load(options_deepcopy)) }
       end
+
       # rubocop:enable Security/MarshalLoad
 
-      def roles_for(names)
+      def roles_for(*names)
+        names = [names].flatten
         options = extract_options(names)
         s = Filter.new(:role, names).filter(servers_by_key.values)
         s.select { |server| server.select?(options) }
       end
 
-      def role_properties_for(rolenames)
+      def role_properties_for(*rolenames, include_non_role_props:false)
+        rolenames = [rolenames].flatten
         roles = rolenames.to_set
         rps = Set.new unless block_given?
         roles_for(rolenames).each do |host|
@@ -43,12 +46,20 @@ module CapistranoConfig
               if block_given?
                 yield host, role, props
               else
-                rps << (props || {}).merge(role: role, hostname: host.hostname)
+                if include_non_role_props
+                  rps << (props || {}).merge(role: role, hostname: host.hostname).merge(host.non_role_properties.to_h)
+                else
+                  rps << (props || {}).merge(role: role, hostname: host.hostname)
+                end
               end
             end
           end
         end
         block_given? ? nil : rps
+      end
+
+      def all_properties_for(*rolenames)
+        role_properties_for(*rolenames, include_non_role_props:true)
       end
 
       def fetch_primary(role)

@@ -16,6 +16,16 @@ module CapistranoConfig
       end
       alias roles= add_roles
 
+      def non_role_properties
+        properties.slice(*(properties.keys.to_a - roles.to_a))
+      end
+
+      def properties_with_roles(*roles)
+        non_role_properties.tap do |props|
+          (roles & roles_array).each {|r| props.merge(fetch(r) || {}) }
+        end
+      end
+
       def add_role(role)
         roles.add role.to_sym
         self
@@ -80,8 +90,14 @@ module CapistranoConfig
       end
 
       class Properties
-        def initialize
-          @properties = {}
+        include Enumerable
+
+        def initialize(init_props={})
+          @properties = init_props
+        end
+
+        def each
+          keys.each {|k| yield(k, self.fetch(k) ) }
         end
 
         def set(key, value)
@@ -97,8 +113,16 @@ module CapistranoConfig
           end
         end
 
+        def merge(other_props)
+          other_props.each {|k,v| set(k,v)}
+        end
+
         def fetch(key)
           @properties[key]
+        end
+
+        def slice(*keys)
+          self.class.new(@properties.slice(*keys))
         end
 
         def respond_to_missing?(method, _include_all=false)
@@ -125,6 +149,10 @@ module CapistranoConfig
 
         def to_h
           @properties
+        end
+
+        def deep_copy
+          Marshal.load(Marshal.dump(self))
         end
 
         private

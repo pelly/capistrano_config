@@ -329,9 +329,11 @@ module CapistranoConfig
     describe "custom filtering" do
       it "accepts a custom filter object" do
         filter = Object.new
+
         def filter.filter(servers)
           servers
         end
+
         config.add_filter(filter)
       end
 
@@ -341,6 +343,7 @@ module CapistranoConfig
 
       it "raises an error if passed a block and an object" do
         filter = Object.new
+
         def filter.filter(servers)
           servers
         end
@@ -372,6 +375,83 @@ module CapistranoConfig
 
         config.add_filter(filter)
         expect(config.filter(servers)).to eq(filtered_servers)
+      end
+    end
+
+    describe "merging behavior" do
+      subject { Configuration.new }
+
+      describe "non-cacheing delayed values" do
+        before do
+          subject.other_val = "original immediate setting"
+          subject.delayed_val = subject.no_cache { "DELAYED EVAL of #{subject.fetch(:other_val)}" }
+        end
+
+        it "re-evaluates non-cached delayed values using the newly merged in dependents" do
+          expect(subject.delayed_val).to eq("DELAYED EVAL of original immediate setting")
+          subject.merge!({ other_val: -> () { "new delayed val" } })
+          expect(subject.fetch(:delayed_val)).to eq("DELAYED EVAL of new delayed val")
+        end
+      end
+    end
+
+    describe "#merge_properties" do
+      subject { Configuration.new }
+      before do
+        subject.fluctuates = "this will change"
+        subject.base_val = "base val"
+        subject.server :s1, roles: %w{r1 r2}, s1_prop: "s1 based prop", r1: { r1_prop: "s1 r1 prop", fluctuates: "s1 r1" }, r2: { r2_prop: "s1 r2 prop", fluctuates: "s1 r2" }
+        puts "server roles: #{subject.server(:s1).roles.inspect}"
+        expect(subject.fluctuates).to eq("this will change")
+        subject.merge_properties(host: :s1, role: :r1)
+      end
+
+      it "adds role properties" do
+        expect(subject[:fluctuates]).to eq("s1 r1")
+        expect(subject[:r1_prop]).to eq("s1 r1 prop")
+      end
+
+      it "adds host properties" do
+        expect(subject[:s1_prop]).to eq("s1 based prop")
+      end
+
+      it "keeps existing properties not overridden" do
+        expect(subject[:base_val]).to eq("base val")
+      end
+
+      it "doesn't merge in other role properties" do
+        expect(subject[:r2_prop]).to be_nil
+      end
+
+      describe "when no role specified" do
+        it "doesn't merge any role-based properties"
+      end
+
+    end
+
+    describe "#merge_properties corner cases" do
+      subject { Configuration.new }
+      before do
+        subject.server :s1, roles: %w{role1}, some_val: "s1", role1: { role1_key1: "role1 val 1" }
+      end
+
+      it "raises an error if you request to merge properties from a role that doesn't exist" do
+        expect { subject.merge_properties host: :s1, role: :non_existant }.to raise_error(RuntimeError, "Role :non_existant doesn't exist for :s1")
+      end
+    end
+
+    describe "#merge_properties behavior with lambdas / procs" do
+      subject { Configuration.new }
+      before do
+        subject.fluctuates = "this will change"
+        subject.proc_property = -> () { "proc property value of fluctuates: #{subject.fluctuates}" }
+        subject.server :s1, roles: %w{r1}, r1: {fluctuates: "s1 r1"}
+        expect(subject.proc_property).to eq("proc property value of fluctuates: this will change")
+        subject.merge_properties(host: :s1, role: :r1)
+      end
+
+      it "re-evaluates the proc to incorporate any changes" do
+        expect(subject.proc_property).to eq("proc property value of fluctuates: s1 r1")
       end
     end
   end

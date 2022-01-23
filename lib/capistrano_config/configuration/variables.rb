@@ -7,6 +7,20 @@ module CapistranoConfig
     # like spelling errors or unused variables that may lead to unexpected
     # behavior.
     class Variables
+
+      class NonCachingProc < Proc
+      end
+
+      module NonCacheable
+        extend self
+
+        def no_cache(&block)
+          NonCachingProc.new(&block)
+        end
+
+        alias_method :dont_cache, :no_cache
+      end
+
       CAPISTRANO_LOCATION = File.expand_path("../..", __FILE__).freeze
       IGNORED_LOCATIONS = [
         "#{CAPISTRANO_LOCATION}/configuration/variables.rb:",
@@ -18,8 +32,9 @@ module CapistranoConfig
       private_constant :CAPISTRANO_LOCATION, :IGNORED_LOCATIONS
 
       include CapistranoConfig::ProcHelpers
+      include NonCacheable
 
-      def initialize(values={}, indifferent_access:true)
+      def initialize(values = {}, indifferent_access: true)
         @trusted_keys = []
         @fetched_keys = []
         @locations = {}
@@ -35,7 +50,13 @@ module CapistranoConfig
         @trusted = true
       end
 
-      def set(key, value=nil, &block)
+      def merge!(other)
+        other.each do |key, value|
+          set(key, value)
+        end
+      end
+
+      def set(key, value = nil, &block)
         key = key.to_sym if @indifferent_access
         @trusted_keys << key if trusted? && !@trusted_keys.include?(key)
         remember_location(key)
@@ -44,18 +65,23 @@ module CapistranoConfig
         values[key]
       end
 
-      def fetch(key, default=nil, &block)
+      def fetch(key, default = nil, &block)
         key = key.to_sym if @indifferent_access
         fetched_keys << key unless fetched_keys.include?(key)
         peek(key, default, &block)
       end
 
       # Internal use only.
-      def peek(key, default=nil, &block)
+      def peek(key, default = nil, &block)
         key = key.to_sym if @indifferent_access
         value = fetch_for(key, default, &block)
         while callable_without_parameters?(value)
-          value = (values[key] = value.call)
+          # # cache_this = !value.is_a?(NonCachingProc)
+          # # if cache_this
+          #   value = (values[key] = value.call)
+          # else
+          value = value.call
+          # end
         end
         value
       end

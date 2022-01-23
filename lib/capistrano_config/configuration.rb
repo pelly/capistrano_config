@@ -21,18 +21,18 @@ module CapistranoConfig
     extend Forwardable
     attr_reader :variables
     def_delegators :variables,
-                   :set, :fetch, :fetch_for, :delete, :keys, :validate
+                   :set, :fetch, :fetch_for, :delete, :keys, :validate, :merge!, :no_cache, :dont_cache
 
-    def initialize(values={})
+    def initialize(values = {})
       @variables = ValidatedVariables.new(Variables.new(values))
     end
 
-    def ask(key, default=nil, options={})
+    def ask(key, default = nil, options = {})
       question = Question.new(key, default, options)
       set(key, question)
     end
 
-    def set_if_empty(key, value=nil, &block)
+    def set_if_empty(key, value = nil, &block)
       set(key, value, &block) unless keys.include?(key)
     end
 
@@ -42,6 +42,14 @@ module CapistranoConfig
 
     def remove(key, *values)
       set(key, Array(fetch(key)) - values)
+    end
+
+    def merge_host(key)
+      self.merge!(server(key).properties.to_h)
+    end
+
+    def merge_role(key)
+      self.merge!(role(key).properties.to_h)
     end
 
     def any?(key)
@@ -62,7 +70,7 @@ module CapistranoConfig
       !value.nil? && value.is_a?(Question)
     end
 
-    def role(name, hosts, options={})
+    def role(name, hosts, options = {})
       if name == :all
         raise ArgumentError, "#{name} reserved name for role. Please choose another name"
       end
@@ -70,16 +78,29 @@ module CapistranoConfig
       servers.add_role(name, hosts, options)
     end
 
-    def server(name, properties={})
+    def server(name, properties = {})
       servers.add_host(name, properties)
+    end
+
+    # def role_properties_for()
+
+    def merge_properties(host:, role:)
+      found_host = server(host)
+      raise "Role #{role.inspect} doesn't exist for #{host.inspect}" unless found_host.has_role?(role)
+      server_host_properties_with_roles = found_host.properties_with_roles(role)
+      merge!(server_host_properties_with_roles)
     end
 
     def roles_for(names)
       servers.roles_for(names)
     end
 
-    def role_properties_for(names, &block)
-      servers.role_properties_for(names, &block)
+    def role_properties_for(names, include_non_role_props: false, &block)
+      servers.role_properties_for(names, include_non_role_props: include_non_role_props, &block)
+    end
+
+    def all_properties_for(names, &block)
+      servers.all_properties_for(names, &block)
     end
 
     def primary(role)
@@ -96,12 +117,12 @@ module CapistranoConfig
       backend.configure do |sshkit|
         configure_sshkit_output(sshkit)
         sshkit.output_verbosity = fetch(:log_level)
-        sshkit.default_env      = fetch(:default_env)
-        sshkit.backend          = fetch(:sshkit_backend, SSHKit::Backend::Netssh)
+        sshkit.default_env = fetch(:default_env)
+        sshkit.backend = fetch(:sshkit_backend, SSHKit::Backend::Netssh)
         sshkit.backend.configure do |backend|
-          backend.pty                = fetch(:pty)
+          backend.pty = fetch(:pty)
           backend.connection_timeout = fetch(:connection_timeout)
-          backend.ssh_options        = (backend.ssh_options || {}).merge(fetch(:ssh_options, {}))
+          backend.ssh_options = (backend.ssh_options || {}).merge(fetch(:ssh_options, {}))
         end
       end
     end
@@ -114,11 +135,12 @@ module CapistranoConfig
       @timestamp ||= Time.now.utc
     end
 
-    def add_filter(filter=nil, &block)
+    def add_filter(filter = nil, &block)
       if block
         raise ArgumentError, "Both a block and an object were given" if filter
 
         filter = Object.new
+
         def filter.filter(servers)
           block.call(servers)
         end
@@ -128,6 +150,14 @@ module CapistranoConfig
       end
       @custom_filters ||= []
       @custom_filters << filter
+    end
+
+    def properties_for(hosts:, roles:)
+      Enumerator.new do |enum|
+        hosts.each do |host|
+          server(host).role_properties_for(*roles, include_non_role_props: true).each { |p| enum << p }
+        end
+      end
     end
 
     def setup_filters
@@ -141,6 +171,8 @@ module CapistranoConfig
       @filters << Filter.new(:host, fh[:host]) if fh[:host]
       @filters << Filter.new(:role, fh[:role]) if fh[:role]
     end
+
+    # def merged_properties_for()
 
     def add_cmdline_filter(type, values)
       cmdline_filters << Filter.new(type, values)
