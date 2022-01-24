@@ -8,19 +8,6 @@ module CapistranoConfig
     # behavior.
     class Variables
 
-      class NonCachingProc < Proc
-      end
-
-      module NonCacheable
-        extend self
-
-        def no_cache(&block)
-          NonCachingProc.new(&block)
-        end
-
-        alias_method :dont_cache, :no_cache
-      end
-
       CAPISTRANO_LOCATION = File.expand_path("../..", __FILE__).freeze
       IGNORED_LOCATIONS = [
         "#{CAPISTRANO_LOCATION}/configuration/variables.rb:",
@@ -32,7 +19,6 @@ module CapistranoConfig
       private_constant :CAPISTRANO_LOCATION, :IGNORED_LOCATIONS
 
       include CapistranoConfig::ProcHelpers
-      include NonCacheable
 
       def initialize(values = {}, indifferent_access: true)
         @trusted_keys = []
