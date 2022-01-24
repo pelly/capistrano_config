@@ -67,14 +67,12 @@ module CapistranoConfig
 
       def fetch!(key, &block)
         key = key.to_sym if @indifferent_access
-        # puts "has_key?(#{key.inspect}): #{has_key?(key).true}"
         raise "#{key.inspect} does not exist in variables keys" unless has_key?(key)
         fetch(key, &block)
       end
 
       def fetch(key, default = nil, &block)
         key = key.to_sym if @indifferent_access
-        # raise "#{key.inspect} does not exist in list of keys" unless has_key?(key)
         fetched_keys << key unless fetched_keys.include?(key)
         peek(key, default, &block)
       end
