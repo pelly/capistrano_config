@@ -21,7 +21,7 @@ module CapistranoConfig
     extend Forwardable
     attr_reader :variables
     def_delegators :variables,
-                   :set, :fetch,:fetch!, :fetch_for, :delete, :keys, :validate, :merge!, :no_cache, :dont_cache
+                   :set, :fetch,:fetch!, :fetch_for, :delete, :keys, :validate, :merge!
 
     def initialize(values = {})
       @variables = ValidatedVariables.new(Variables.new(values))

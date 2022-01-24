@@ -384,7 +384,7 @@ module CapistranoConfig
       describe "non-cacheing delayed values" do
         before do
           subject.other_val = "original immediate setting"
-          subject.delayed_val = subject.no_cache { "DELAYED EVAL of #{subject.fetch(:other_val)}" }
+          subject.delayed_val = ->() { "DELAYED EVAL of #{subject.fetch(:other_val)}" }
         end
 
         it "re-evaluates non-cached delayed values using the newly merged in dependents" do
