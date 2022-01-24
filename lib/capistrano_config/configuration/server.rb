@@ -20,9 +20,25 @@ module CapistranoConfig
         properties.slice(*(properties.keys.to_a - roles.to_a))
       end
 
-      def properties_with_roles(*roles)
+      alias_method :server_properties, :non_role_properties
+
+      def role_properties_for(*roles)
+        roles = [roles].flatten.map(&:to_sym)
+        (roles & self.roles.to_a).inject(non_role_properties) do |props, role|
+          fetch(role).each { |k,v| props.set(k,v) }
+          props
+        end
+      end
+
+      alias_method :role_properties, :role_properties_for
+
+      def merged_properties(*roles)
+        roles = [roles].flatten
         non_role_properties.tap do |props|
-          (roles & roles_array).each {|r| props.merge(fetch(r) || {}) }
+          puts "roles & roles_array: #{roles.inspect} & #{roles_array.inspect}"
+          roles_intersection = (roles & roles_array)
+          puts  "roles_intersection: #{roles_intersection.inspect}"
+          roles_intersection.each {|r| props.merge(fetch(r) || {}) }
         end
       end
 
@@ -98,6 +114,10 @@ module CapistranoConfig
 
         def each
           keys.each {|k| yield(k, self.fetch(k) ) }
+        end
+
+        def empty?
+          @properties.nil? || @properties.empty?
         end
 
         def set(key, value)

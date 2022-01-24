@@ -8,6 +8,7 @@ module CapistranoConfig
       include Enumerable
 
       def add_host(host, properties = {})
+        host = host.to_sym
         new_host = Server[host]
         new_host.port = properties[:port] if properties.key?(:port)
         # This matching logic must stay in sync with `Server#matches?`.
@@ -71,9 +72,24 @@ module CapistranoConfig
         servers_by_key.values.each { |server| yield server }
       end
 
+      def method_missing(symbol, *args)
+        if args.empty? && server = servers_by_key[ServerKey.new(symbol.to_sym)]
+          return server
+        end
+        super
+      end
+
       private
 
-      ServerKey = Struct.new(:hostname, :port)
+      ServerKey = Struct.new(:hostname, :port) do
+        def ==(other)
+          hostname == other.hostname && port == other.port
+        end
+
+        def hash
+          [hostname, port].hash
+        end
+      end
 
       def servers_by_key
         @servers_by_key ||= {}

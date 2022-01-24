@@ -65,8 +65,16 @@ module CapistranoConfig
         values[key]
       end
 
+      def fetch!(key, &block)
+        key = key.to_sym if @indifferent_access
+        # puts "has_key?(#{key.inspect}): #{has_key?(key).true}"
+        raise "#{key.inspect} does not exist in variables keys" unless has_key?(key)
+        fetch(key, &block)
+      end
+
       def fetch(key, default = nil, &block)
         key = key.to_sym if @indifferent_access
+        # raise "#{key.inspect} does not exist in list of keys" unless has_key?(key)
         fetched_keys << key unless fetched_keys.include?(key)
         peek(key, default, &block)
       end
@@ -76,12 +84,7 @@ module CapistranoConfig
         key = key.to_sym if @indifferent_access
         value = fetch_for(key, default, &block)
         while callable_without_parameters?(value)
-          # # cache_this = !value.is_a?(NonCachingProc)
-          # # if cache_this
-          #   value = (values[key] = value.call)
-          # else
           value = value.call
-          # end
         end
         value
       end
@@ -106,6 +109,10 @@ module CapistranoConfig
 
       def keys
         values.keys
+      end
+
+      def has_key?(key)
+        values.has_key?(key)
       end
 
       # Keys that have been set, but which have never been fetched.

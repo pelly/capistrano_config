@@ -401,7 +401,6 @@ module CapistranoConfig
         subject.fluctuates = "this will change"
         subject.base_val = "base val"
         subject.server :s1, roles: %w{r1 r2}, s1_prop: "s1 based prop", r1: { r1_prop: "s1 r1 prop", fluctuates: "s1 r1" }, r2: { r2_prop: "s1 r2 prop", fluctuates: "s1 r2" }
-        puts "server roles: #{subject.server(:s1).roles.inspect}"
         expect(subject.fluctuates).to eq("this will change")
         subject.merge_properties(host: :s1, role: :r1)
       end
@@ -450,9 +449,14 @@ module CapistranoConfig
         subject.merge_properties(host: :s1, role: :r1)
       end
 
+      it "accesses roles through the server method" do
+        expect(subject.server(:s1).has_role?("r1")).to be_truthy
+      end
+
       it "re-evaluates the proc to incorporate any changes" do
         expect(subject.proc_property).to eq("proc property value of fluctuates: s1 r1")
       end
     end
+
   end
 end

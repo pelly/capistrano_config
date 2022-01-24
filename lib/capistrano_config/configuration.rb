@@ -21,7 +21,7 @@ module CapistranoConfig
     extend Forwardable
     attr_reader :variables
     def_delegators :variables,
-                   :set, :fetch, :fetch_for, :delete, :keys, :validate, :merge!, :no_cache, :dont_cache
+                   :set, :fetch,:fetch!, :fetch_for, :delete, :keys, :validate, :merge!, :no_cache, :dont_cache
 
     def initialize(values = {})
       @variables = ValidatedVariables.new(Variables.new(values))
@@ -84,10 +84,18 @@ module CapistranoConfig
 
     # def role_properties_for()
 
-    def merge_properties(host:, role:)
+    def merge_properties(host:, role:nil)
+      host = host.to_sym
+      role = role && role.to_sym
       found_host = server(host)
       raise "Role #{role.inspect} doesn't exist for #{host.inspect}" unless found_host.has_role?(role)
-      server_host_properties_with_roles = found_host.properties_with_roles(role)
+      server_host_properties_with_roles = found_host.merged_properties(role || [])
+      if server_host_properties_with_roles.empty?
+        _logger.warn("No properties to merge in for host #{host.inspect} and role #{role.inspect}")
+        if found_host
+          _logger.warn("Server information: #{found_host.properties.inspect}")
+        end
+      end
       merge!(server_host_properties_with_roles)
     end
 
@@ -217,6 +225,10 @@ module CapistranoConfig
     end
 
     private
+
+    def _logger
+      @logger ||= Logger.new($stdout)
+    end
 
     def cmdline_filters
       @cmdline_filters ||= []
