@@ -3,8 +3,10 @@
 lib = File.expand_path("../lib", __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 require "capistrano_config/version"
+require "gem_helper/gem_utils"
 
 Gem::Specification.new do |gem|
+  utils = GemUtils.new(gem: gem)
   gem.name          = "capistrano_config"
   gem.version       = CapistranoConfig::VERSION
   gem.authors       = ["Tom Clements", "Lee Hambley", "John Pelly"]
@@ -15,7 +17,7 @@ Gem::Specification.new do |gem|
   gem.metadata      = {
     "source_code_uri" => "https://github.com/pelly/capistrano_config",
   }
-  gem.files         = `cd #{__dir__} && git ls-files -z`.split("\x0").reject { |f| f =~ /^docs/ }
+  gem.files         = utils.gem_files_with_standard_exclusions.reject { |f| f =~ /^docs/ }
   gem.test_files    = gem.files.grep(%r{^(test|spec|features)/})
   gem.require_paths = ["lib"]
 
