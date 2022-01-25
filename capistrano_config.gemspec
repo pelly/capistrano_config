@@ -15,7 +15,7 @@ Gem::Specification.new do |gem|
   gem.metadata      = {
     "source_code_uri" => "https://github.com/pelly/capistrano_config",
   }
-  gem.files         = `git ls-files -z`.split("\x0").reject { |f| f =~ /^docs/ }
+  gem.files         = `cd #{__dir__} && git ls-files -z`.split("\x0").reject { |f| f =~ /^docs/ }
   gem.test_files    = gem.files.grep(%r{^(test|spec|features)/})
   gem.require_paths = ["lib"]
 
