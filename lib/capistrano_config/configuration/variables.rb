@@ -73,7 +73,7 @@ module CapistranoConfig
         value
       end
 
-      def fetch_for(key, default, &block)
+      def fetch_for(key, default=nil, &block)
         key = key.to_sym if @indifferent_access
         block ? values.fetch(key, &block) : values.fetch(key, default)
       end
